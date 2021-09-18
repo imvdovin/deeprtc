@@ -7,6 +7,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from aiortc import RTCSessionDescription, RTCPeerConnection
 from aiortc.contrib.media import MediaBlackhole, MediaPlayer, MediaRecorder, MediaRelay
+from webrtc.audio_track import AudioTrackStream
+from webrtc.types import EMediaStreamAction
 
 
 app = FastAPI()
@@ -21,6 +23,7 @@ ROOT = os.path.dirname(__file__)
 
 
 pcs = set()
+relay = MediaRelay()
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -31,6 +34,7 @@ async def read_item(request: Request):
 @app.post("/offer")
 async def offer(request: Request):
     params = await request.json()
+    logger.info(params)
     offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
 
     pc = RTCPeerConnection()
@@ -61,9 +65,12 @@ async def offer(request: Request):
 
     @pc.on("track")
     def on_track(track):
-        log_info("Track %s received", track.kind)
-
         if track.kind == "audio":
+            pc.addTrack(
+                AudioTrackStream(
+                    relay.subscribe(track), action=EMediaStreamAction.TO_TEXT
+                )
+            )
             recorder.addTrack(track)
 
         @track.on("ended")
