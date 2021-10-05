@@ -16,3 +16,5 @@ __pycache__/
 /htmlcov/
 /docs/_build/
 .python-version
+.env
+*.gz

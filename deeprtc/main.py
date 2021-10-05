@@ -1,12 +1,12 @@
 import logging
 import uuid
 import os
-from fastapi import FastAPI, Request, APIRouter
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from aiortc import RTCSessionDescription, RTCPeerConnection
-from aiortc.contrib.media import MediaBlackhole, MediaPlayer, MediaRecorder, MediaRelay
+from aiortc.contrib.media import MediaBlackhole, MediaRelay
 from webrtc.audio_track import AudioTrackStream
 from webrtc.types import EMediaStreamAction
 
@@ -71,7 +71,6 @@ async def offer(request: Request):
                     relay.subscribe(track), action=EMediaStreamAction.TO_TEXT
                 )
             )
-            recorder.addTrack(track)
 
         @track.on("ended")
         async def on_ended():
