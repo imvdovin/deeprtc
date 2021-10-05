@@ -1,15 +1,24 @@
 import pydub
+import logging
+import os
+from uuid import uuid4
 from aiortc import MediaStreamTrack
 from webrtc.types import EMediaStreamAction
+from common.settings import asr_model, base_dir
+
+
+logger = logging.getLogger(__name__)
 
 
 class AudioTrackStream(MediaStreamTrack):
     kind = "audio"
+    sound_window_len = 5000
 
     def __init__(self, track, action: EMediaStreamAction):
         super().__init__()
         self.track = track
         self.action = action
+        self.sound_chunk = pydub.AudioSegment.empty()
 
     async def recv(self):
         frame = await self.track.recv()
@@ -22,13 +31,27 @@ class AudioTrackStream(MediaStreamTrack):
             channels=len(frame.layout.channels),
         )
 
-        channel_sounds = sound.split_to_mono()
-        channel_samples = [s.get_array_of_samples() for s in channel_sounds]
+        self.sound_chunk += sound
 
-        print(channel_samples)
+        len_chunk = len(self.sound_chunk)
 
-        frame_actions = {
-            EMediaStreamAction.TO_TEXT.value: lambda x: x + 1,
-        }
+        print(f'Len of sound chunk: {len_chunk}')
+
+        if len(self.sound_chunk) > self.sound_window_len:
+            res = self.sound_chunk.set_channels(1)
+            try:
+                filename = f'{uuid4().hex}.wav'
+                res.export(filename, format='wav')
+                # wav = np.array(sample)
+                full_path = str(base_dir / filename)
+                text = asr_model.transcribe(
+                    paths2audio_files=[full_path])
+                # np.frombuffer(memoryBuff.getbuffer(), dtype=np.int16))
+                print(f'Text: {text}')
+                os.remove(full_path)
+            except Exception as err:
+                logger.error(err)
+            finally:
+                self.sound_chunk = pydub.AudioSegment.empty()
 
         return frame
