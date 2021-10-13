@@ -18,3 +18,4 @@ __pycache__/
 .python-version
 .env
 *.gz
+media/
