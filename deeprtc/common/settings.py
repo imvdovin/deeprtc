@@ -16,10 +16,7 @@ load_dotenv(env_location)
 
 class Settings(BaseSettings):
     acoustic_model_path: str
-
-    # def __init__(self):
-    #     if not self.acoustic_model_path:
-    #         raise ValueError('Please, set acoustic model path!')
+    save_folder: str
 
     class Config:
         env_file = env_location
