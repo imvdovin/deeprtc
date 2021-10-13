@@ -1,18 +1,24 @@
 import logging
 import uuid
 import os
+from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from aiortc import RTCSessionDescription, RTCPeerConnection
 from aiortc.contrib.media import MediaBlackhole, MediaRelay
-from webrtc.audio_track import AudioTrackStream
-from webrtc.types import EMediaStreamAction
+from common.settings import get_settings
+from common.exceptions.failed_on_start import FailedOnStartException
+from modules.webrtc.audio_track import AudioTrackStream
+from modules.webrtc.types import EMediaStreamAction
+from modules.file.controller import router as file_router
 
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.include_router(file_router, prefix="/")
 
 templates = Jinja2Templates(directory="templates")
 
@@ -24,6 +30,16 @@ ROOT = os.path.dirname(__file__)
 
 pcs = set()
 relay = MediaRelay()
+
+
+@app.on_event("startup")
+async def on_start():
+    settings = get_settings()
+
+    for k, v in settings.__dict__.items():
+        if v != '' and v != None:
+            continue
+        raise FailedOnStartException(f'Set up value for {k} in .env')
 
 
 @app.get("/", response_class=HTMLResponse)
