@@ -3,7 +3,7 @@ import logging
 import os
 from uuid import uuid4
 from aiortc import MediaStreamTrack
-from webrtc.types import EMediaStreamAction
+from modules.webrtc.types import EMediaStreamAction
 from common.settings import asr_model, base_dir
 
 
