@@ -18,7 +18,7 @@ from modules.file.controller import router as file_router
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-app.include_router(file_router, prefix="/")
+app.include_router(file_router, prefix="/files")
 
 templates = Jinja2Templates(directory="templates")
 

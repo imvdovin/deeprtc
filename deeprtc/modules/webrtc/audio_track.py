@@ -4,7 +4,7 @@ import os
 from uuid import uuid4
 from aiortc import MediaStreamTrack
 from modules.webrtc.types import EMediaStreamAction
-from common.settings import asr_model, base_dir
+from common.settings import model, base_dir
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class AudioTrackStream(MediaStreamTrack):
                 res.export(filename, format='wav')
                 # wav = np.array(sample)
                 full_path = str(base_dir / filename)
-                text = asr_model.transcribe(
+                text = model.transcribe(
                     paths2audio_files=[full_path])
                 # np.frombuffer(memoryBuff.getbuffer(), dtype=np.int16))
                 print(f'Text: {text}')

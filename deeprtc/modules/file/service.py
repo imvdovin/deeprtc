@@ -1,5 +1,6 @@
 import aiofiles
 import functools
+import pydub
 from uuid import uuid4
 from pathlib import Path
 from fastapi import UploadFile
@@ -28,7 +29,7 @@ class FileService:
         self.settings = get_settings()
 
     @media_path_defined()
-    async def save(self, file: UploadFile) -> Path:
+    async def save(self, file: UploadFile):
         *file_name, file_ext = file.filename.split('.')
 
         if file_ext == '' or file_ext is None:
@@ -37,8 +38,11 @@ class FileService:
         generated_name = '{0}.{1}'.format(uuid4().hex, file_ext)
         dest = Path(self.settings.save_folder) / generated_name
 
-        async with aiofiles.open(dest, 'wb') as out_file:
-            content = await file.read()
-            await out_file.write(content)
+        audio_obj = pydub.AudioSegment.from_wav(file.file)
 
-        return dest
+        transformed_audio = audio_obj.set_channels(
+            1).set_frame_rate(44100).set_sample_width(2)
+
+        transformed_audio.export(str(dest), format='wav')
+
+        return transformed_audio.get_array_of_samples()
