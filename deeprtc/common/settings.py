@@ -1,4 +1,3 @@
-import nemo.collections.asr as nemo_asr
 from functools import lru_cache
 from pydantic import BaseSettings
 from pathlib import Path
@@ -6,7 +5,7 @@ from dotenv import load_dotenv
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 
-env_location = Path().parent.parent.resolve() / '.env'
+env_location = Path(__file__).resolve().parent.parent.parent / '.env'
 
 base_dir = Path().parent
 
@@ -19,6 +18,12 @@ class Settings(BaseSettings):
     save_folder: str
     project_env: str
 
+    mongo_username: str
+    mongo_password: str
+    mongo_database: str
+    mongo_host: str
+    mongo_port: int
+
     class Config:
         env_file = env_location
 
@@ -30,6 +35,8 @@ def get_settings():
 
 model = None
 processor = None
+
+gpu_usage = 'cuda:0'
 
 if Settings().project_env != 'test':
     # asr_model = nemo_asr.models.EncDecCTCModel.restore_from(
