@@ -1,0 +1,40 @@
+version: "3"
+services:
+  mongodb:
+    image: mongo:5.0
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD}"
+      MONGO_INITDB_DATABASE: "${MONGO_DATABASE}"
+    ports:
+      - "${MONGO_PORT}:27017"
+    volumes:
+      - ./var/db.data/data:/data/db:delegated
+      - ./var/db.data/dump:/docker-entrypoint-initdb.d:delegated
+
+  worker:
+    build: .
+    command: celery worker --app=worker.celery --loglevel=info --logfile=logs/celery.log
+    volumes:
+      - ./:/usr/src/app
+    environment:
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    depends_on:
+      - redis
+
+  dashboard:
+    build: .
+    command:  flower --app=worker.celery --port=5555 --broker=redis://redis:6379/0
+    ports:
+      - 5556:5555
+    environment:
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+    depends_on:
+      - redis
+      - worker
+
+  redis:
+    image: redis:6-alpine
