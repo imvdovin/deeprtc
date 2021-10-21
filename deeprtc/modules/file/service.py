@@ -1,4 +1,5 @@
 import functools
+from fastapi.exceptions import HTTPException
 import pydub
 import docx
 from uuid import uuid4
@@ -52,9 +53,14 @@ class FileService:
 
         return SaveFileResult(path=dest, name=generated_name)
 
-    def create_word_by_text(self, text: str) -> BytesIO:
+    async def create_word_by_text(self, token: str) -> BytesIO:
+        finded_file = await self.repository.find_one(token)
+
+        if not finded_file:
+            raise HTTPException(status=404)
+
         doc: docx.Document = docx.Document()
-        doc.add_paragraph(text)
+        doc.add_paragraph(finded_file['text'])
 
         doc_stream = BytesIO()
 
