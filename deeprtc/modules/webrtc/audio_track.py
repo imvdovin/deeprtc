@@ -3,8 +3,8 @@ import logging
 import os
 from uuid import uuid4
 from aiortc import MediaStreamTrack
-from modules.webrtc.types import EMediaStreamAction
-from common.settings import model, base_dir
+from deeprtc.modules.webrtc.types import EMediaStreamAction
+from deeprtc.common.settings import model, base_dir
 
 
 logger = logging.getLogger(__name__)

@@ -1,11 +1,15 @@
-import aiofiles
 import functools
 import pydub
+import docx
 from uuid import uuid4
+from io import BytesIO
 from pathlib import Path
 from fastapi import UploadFile
-from common.settings import get_settings
-from modules.file.exceptions.http_unsupported_extension import UnsupportedExtensionHttpException
+from deeprtc.common.settings import get_settings
+from deeprtc.modules.file.exceptions.http_unsupported_extension import UnsupportedExtensionHttpException
+from deeprtc.modules.file.repository import FileRepository
+from deeprtc.modules.file.dto.create_audio_text_token_dto import CreateAudioTextTokenDto
+from deeprtc.modules.file.types import SaveFileResult
 
 
 def media_path_defined():
@@ -27,9 +31,10 @@ def media_path_defined():
 class FileService:
     def __init__(self):
         self.settings = get_settings()
+        self.repository = FileRepository()
 
     @media_path_defined()
-    async def save(self, file: UploadFile):
+    async def save(self, file: UploadFile) -> SaveFileResult:
         *file_name, file_ext = file.filename.split('.')
 
         if file_ext == '' or file_ext is None:
@@ -41,8 +46,24 @@ class FileService:
         audio_obj = pydub.AudioSegment.from_wav(file.file)
 
         transformed_audio = audio_obj.set_channels(
-            1).set_frame_rate(44100).set_sample_width(2)
+            1).set_frame_rate(16000).set_sample_width(2)
 
         transformed_audio.export(str(dest), format='wav')
 
-        return transformed_audio.get_array_of_samples()
+        return SaveFileResult(path=dest, name=generated_name)
+
+    def create_word_by_text(self, text: str) -> BytesIO:
+        doc: docx.Document = docx.Document()
+        doc.add_paragraph(text)
+
+        doc_stream = BytesIO()
+
+        doc.save(doc_stream)
+
+        return doc_stream
+
+    async def create_token_for_transcribed_audio(
+            self,
+            file_name: str):
+        create_dto = CreateAudioTextTokenDto(file_name=file_name)
+        return await self.repository.create(create_dto)

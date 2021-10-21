@@ -1,23 +1,19 @@
 from pathlib import Path
-import torch
-import torch
-from common.settings import model, processor
+from deeprtc.modules.asr.predict import ASR
+from deeprtc.modules.file.repository import FileRepository
+from deeprtc.modules.file.dto.update_audio_text_token_dto import UpdateAudioTextTokenDto
 
 
 class ASRService:
     def __init__(self):
-        self.asr_model = model
+        self.asr = ASR()
+        self.file_repository = FileRepository()
 
-    def transcribe(self, file, device='cpu'):
-        inputs = processor(file,
-                           sampling_rate=16_000,
-                           return_tensors="pt",
-                           padding=True)
+    async def transcribe(self, file_path: Path, object_id):
+        predict = self.asr.recognize(file_path)
 
-        with torch.no_grad():
-            logits = model(inputs.input_values.to(device),
-                           attention_mask=inputs.attention_mask.to(device)).logits
-            pred_ids = torch.argmax(logits, dim=-1)
-        predict = processor.batch_decode(pred_ids)[0].replace("<s>", "")
-        return predict
-    # return self.asr_model.transcribe(paths2audio_files=[str(file_path.resolve())])
+        text = predict['utterance']
+
+        update_dto = UpdateAudioTextTokenDto(text=text, transcribed=True)
+
+        await self.file_repository.update({'_id': object_id}, update_dto)
