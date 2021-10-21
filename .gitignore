@@ -20,3 +20,4 @@ __pycache__/
 *.gz
 media/
 var/
+celery.log
