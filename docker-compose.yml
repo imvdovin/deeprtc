@@ -15,9 +15,9 @@ services:
 
   worker:
     build: .
-    command: celery worker --app=worker.celery --loglevel=info --logfile=logs/celery.log
+    command: celery --app celery worker --loglevel=info --logfile=celery.log
     volumes:
-      - ./:/usr/src/app
+      - ./:/app
     environment:
       CELERY_BROKER_URL: "redis://redis:6379/0"
       CELERY_RESULT_BACKEND: "redis://redis:6379/0"
@@ -26,7 +26,7 @@ services:
 
   dashboard:
     build: .
-    command:  flower --app=worker.celery --port=5555 --broker=redis://redis:6379/0
+    command: celery flower --port=5555 --broker=redis://redis:6379/0
     ports:
       - 5556:5555
     environment:
