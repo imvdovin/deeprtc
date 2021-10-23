@@ -40,9 +40,11 @@
 <div class="col-lg-8 mx-auto p-3 py-md-5">
   <!-- <header class="d-flex align-items-center pb-3 mb-5 border-bottom"> -->
   <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
-    <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-      mos.ru
-    </a>
+    <span class="header-status bg-danger text-white" style="padding: 0px 5px;">
+      <a href="/" style="color: white;" class="d-flex align-items-center text-decoration-none">
+        mos.ru
+      </a>
+    </span>
 
     <div class="col-12 col-md-auto mb-2 justify-content-center mb-md-0">
       Статус: <span class="header-status bg-success text-white" style="padding: 0px 5px;">Готов</span>
@@ -66,7 +68,7 @@
 
     <br/>
 
-    <div class="alert alert-info" role="alert">
+    <div class="alert alert-danger" role="alert">
       Внимание! Если перед скачиванием вы обновляли текст (правили вручную или пользовались кнопкой постобработки), то следует его сначала сохранить в бд.
     </div>
 
@@ -254,11 +256,11 @@
 
     <div class="row justify-content-between">
       <div class="col-5">
-        <button type="button" class="btn btn-primary btn-sm" onclick="downloadMsWord();">Скачать MS WORD</button>
-        <button type="button" class="btn btn-primary btn-sm" onclick="updateText();">Сохранить текст в бд</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="downloadMsWord();">Скачать MS WORD</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="updateText();">Сохранить текст в бд</button>
       </div>
       <div class="col-3" style="text-align: right;">
-        <button type="button" class="btn btn-primary btn-sm" onclick="postProcessing();">Постобработка текста</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="postProcessing();">Постобработка текста</button>
       </div>
     </div>
 
@@ -267,7 +269,7 @@
     <div class="accordion" id="accordionExample">
       <div class="accordion-item">
         <h2 class="accordion-header" id="headingOne">
-          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-controls="collapseOne">
+          <button class="accordion-button" style="background: white; color: black;" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-controls="collapseOne">
             Помощь
           </button>
         </h2>
