@@ -29,7 +29,7 @@ class ASRService:
 
         try:
             resp = requests.post(
-                url=self.settings.spellchecker_url, data=data)
+                url=self.settings.spellchecker_url, json=data)
 
             if resp.status_code != 200:
                 raise Exception(
@@ -37,9 +37,9 @@ class ASRService:
 
             resp_encoded = resp.json()
 
-            if len(resp_encoded.content[0]) > 0 \
-                    and len(resp_encoded.content[0][0]) > 0:
-                text = resp_encoded.content[0][0]
+            if len(resp_encoded[0]) > 0 \
+                    and len(resp_encoded[0][0]) > 0:
+                text = resp_encoded[0][0]
                 logger.info(f'Spell checker text: {text}')
         except Exception as err:
             logger.error(err)

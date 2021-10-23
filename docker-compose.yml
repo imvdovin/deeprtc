@@ -51,10 +51,11 @@ services:
     image: deeppavlov/base-cpu
     volumes:
       - ./var/dp_components:/root/.deeppavlov:delegated
-      - ./var/dp_envs:venv:delegated
+      - ./var/dp_envs:/venv:delegated
     environment:
       CONFIG: "levenshtein_corrector_ru"
-    network_mode: host
+    ports:
+      - 5000:5000
 
   redis:
     image: redis:6-alpine
