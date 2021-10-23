@@ -5,18 +5,22 @@ from dotenv import load_dotenv
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 
 
-env_location = Path(__file__).resolve().parent.parent.parent / '.env'
+base_dir = Path(__file__).resolve().parent.parent
 
-base_dir = Path().parent
 
+env_location = base_dir.parent / '.env'
+
+media_folder = base_dir / 'media'
 
 load_dotenv(env_location)
 
+allowed_audio_codecs = ['wav', 'mp3']
+
 
 class Settings(BaseSettings):
-    acoustic_model_path: str
-    save_folder: str
+    model_path: str
     project_env: str
+    spellchecker_url: str
 
     mongo_username: str
     mongo_password: str
@@ -38,10 +42,16 @@ processor = None
 
 gpu_usage = 'cuda:0'
 
-if Settings().project_env != 'test':
+settings = get_settings()
+
+model_folder = base_dir.resolve() / 'models' / settings.model_path
+
+model_folder_str = str(model_folder.resolve())
+
+if settings.project_env != 'test':
     # asr_model = nemo_asr.models.EncDecCTCModel.restore_from(
     #     restore_path=get_settings().acoustic_model_path)
     processor = Wav2Vec2Processor.from_pretrained(
-        "anton-l/wav2vec2-large-xlsr-53-russian")
+        model_folder_str)
     model = Wav2Vec2ForCTC.from_pretrained(
-        "anton-l/wav2vec2-large-xlsr-53-russian")
+        model_folder_str)
