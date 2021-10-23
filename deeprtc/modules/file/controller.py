@@ -5,6 +5,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import Response
 from fastapi.param_functions import Depends
 from deeprtc.modules.asr.service import ASRService
+from deeprtc.tasks.recognize import asr_predict_task
 from deeprtc.modules.file.dto.update_audio_text_token_dto import UpdateAudioTextTokenDto
 from deeprtc.modules.file.service import FileService
 from deeprtc.modules.file.repository import FileRepository
@@ -24,8 +25,8 @@ async def post_audio(
         file_service: FileService = Depends(FileService)):
     save_result = await file_service.save(audio_file)
     insert_result = await file_service.create_token_for_transcribed_audio(save_result.name)
-    background_tasks.add_task(
-        asr_service.transcribe, save_result.path, insert_result.inserted_id)
+    asr_predict_task.delay(save_result.name,
+                           str(insert_result.inserted_id))
     return {'id': str(insert_result.inserted_id)}
 
 
