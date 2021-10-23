@@ -38,10 +38,15 @@
   <body>
     
 <div class="col-lg-8 mx-auto p-3 py-md-5">
-  <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
+  <!-- <header class="d-flex align-items-center pb-3 mb-5 border-bottom"> -->
+  <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
     <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
       mos.ru
     </a>
+
+    <div class="col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+      Статус: <span class="header-status bg-success text-white" style="padding: 0px 5px;">Готов</span>
+    </div>
   </header>
 
   <main>
@@ -62,7 +67,7 @@
     <br/>
 
     <div class="alert alert-info" role="alert">
-      Внимание! Если перед скачиванием вы обновляли текст, то следует его сначала сохранить в бд.
+      Внимание! Если перед скачиванием вы обновляли текст (правили вручную или пользовались кнопкой постобработки), то следует его сначала сохранить в бд.
     </div>
 
     <div class="bg-light border rounded-3" style="padding: 5px">
@@ -122,8 +127,10 @@
           var formData = new FormData();
           formData.append('audio_file', fileObj);
 
+          var status = $('.header-status');
+
           axios({
-            url: '/files',
+            url: '/files/',
             method: 'POST',
             data: formData,
             headers: {
@@ -137,6 +144,9 @@
             if (!data || !data.id) {
               return;
             }
+
+            status.html('Обработка');
+            status.removeClass('bg-success').addClass('bg-primary');
             
             var id = data.id;
             var timer = setInterval(() => {
@@ -150,7 +160,7 @@
               .then(response => {
                 const data = response.data;
 
-                if (!data || !data._id) {
+                if (!data || !data.transcribed) {
                   return;
                 }
 
@@ -159,6 +169,9 @@
                 console.log(data);
 
                 $('.inline-editor').html(data.text);
+
+                status.html('Готов');
+                status.removeClass('bg-primary').addClass('bg-success');
 
                 clearInterval(timer);
               })
@@ -205,13 +218,48 @@
           console.log(data);
         })
       }
+
+      function postProcessing() {
+        var text = $('.inline-editor').text();
+
+        if (!text || text === '') {
+          return;
+        }
+
+        var encodedData = { text: $('.inline-editor').text() };
+
+        var formData = new FormData();
+        formData.append('text', $('.inline-editor').text());
+
+        axios({
+          url: 'http://34.210.60.197:8080/punct/',
+          method: 'POST',
+          data: formData,
+        })
+        .then(response => {
+          const data = response.data;
+
+          if (!data || !data.res) {
+            return;
+          }
+
+          $('.inline-editor').html(data.res);
+
+          console.log(data);
+        })
+      }
     </script>
 
     <br/>
 
-    <div>
-      <button type="button" class="btn btn-primary" onclick="downloadMsWord();">Скачать MS WORD</button>
-      <button type="button" class="btn btn-primary" onclick="updateText();">Сохранить текст в бд</button>
+    <div class="row justify-content-between">
+      <div class="col-5">
+        <button type="button" class="btn btn-primary btn-sm" onclick="downloadMsWord();">Скачать MS WORD</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="updateText();">Сохранить текст в бд</button>
+      </div>
+      <div class="col-3" style="text-align: right;">
+        <button type="button" class="btn btn-primary btn-sm" onclick="postProcessing();">Постобработка текста</button>
+      </div>
     </div>
 
     <br/>
@@ -227,7 +275,11 @@
           <div class="accordion-body">
               Q: Какой формат файлов можно загрузить?
               <br/>
-              <strong>A: .wav</strong>
+              <strong>A: .wav / .mp3</strong>
+              <br/>
+              Q: Что такое постобработка текста?
+              <br/>
+              <strong>A: Добавление пунктуации, разбивка на предложения.</strong>
           </div>
         </div>
       </div>
