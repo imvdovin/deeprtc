@@ -1,5 +1,9 @@
 FROM python:3.9
 
+
+RUN apt-get update -y && apt-get install -y --no-install-recommends build-essential gcc \
+  libsndfile1 ffmpeg sox
+
 # set work directory
 WORKDIR /app
 

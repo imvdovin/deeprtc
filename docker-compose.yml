@@ -15,26 +15,29 @@ services:
 
   worker:
     build: .
-    command: celery --app celery worker --loglevel=info --logfile=celery.log
+    command: celery -A deeprtc.main:celery_app worker -P solo --loglevel=info --logfile=celery.log
     volumes:
       - ./:/app
     environment:
-      CELERY_BROKER_URL: "redis://redis:6379/0"
-      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://localhost:6379/0"
+      CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+    network_mode: host
     depends_on:
       - redis
+      - mongodb
 
   dashboard:
     build: .
-    command: celery flower --port=5555 --broker=redis://redis:6379/0
-    ports:
-      - 5556:5555
+    command: celery -A deeprtc.main:celery_app flower --port=5566
     environment:
-      CELERY_BROKER_URL: "redis://redis:6379/0"
-      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://localhost:6379/0"
+      CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+    network_mode: host
     depends_on:
       - redis
       - worker
 
   redis:
     image: redis:6-alpine
+    ports:
+      - 6379:6379
