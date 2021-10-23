@@ -14,9 +14,12 @@ from deeprtc.common.exceptions.failed_on_start import FailedOnStartException
 from deeprtc.modules.webrtc.audio_track import AudioTrackStream
 from deeprtc.modules.webrtc.types import EMediaStreamAction
 from deeprtc.modules.file.controller import router as file_router
+from deeprtc.celery import celery
 
 
 app = FastAPI()
+
+celery_app = celery
 
 root_dir = Path(__file__).resolve().parent
 
