@@ -1,5 +1,15 @@
 version: "3"
 services:
+  backend:
+    build: .
+    command: uvicorn deeprtc.main:app --host 0.0.0.0 --port 80
+    volumes:
+      - ./:/app
+    network_mode: host
+    depends_on:
+      - worker
+      - mongodb
+
   mongodb:
     image: mongo:5.0
     restart: always
@@ -15,26 +25,39 @@ services:
 
   worker:
     build: .
-    command: celery worker --app=worker.celery --loglevel=info --logfile=logs/celery.log
+    command: celery -A deeprtc.main:celery_app worker -P solo --loglevel=info --logfile=celery.log
     volumes:
-      - ./:/usr/src/app
+      - ./:/app
     environment:
-      CELERY_BROKER_URL: "redis://redis:6379/0"
-      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://localhost:6379/0"
+      CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+    network_mode: host
     depends_on:
       - redis
+      - mongodb
 
   dashboard:
     build: .
-    command:  flower --app=worker.celery --port=5555 --broker=redis://redis:6379/0
-    ports:
-      - 5556:5555
+    command: celery -A deeprtc.main:celery_app flower --port=5566
     environment:
-      CELERY_BROKER_URL: "redis://redis:6379/0"
-      CELERY_RESULT_BACKEND: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://localhost:6379/0"
+      CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
+    network_mode: host
     depends_on:
       - redis
       - worker
 
+  spellchecker:
+    image: deeppavlov/base-cpu
+    volumes:
+      - ./var/dp_components:/root/.deeppavlov:delegated
+      - ./var/dp_envs:/venv:delegated
+    environment:
+      CONFIG: "levenshtein_corrector_ru"
+    ports:
+      - 5000:5000
+
   redis:
     image: redis:6-alpine
+    ports:
+      - 6379:6379

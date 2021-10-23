@@ -18,5 +18,8 @@ __pycache__/
 .python-version
 .env
 *.gz
+deeprtc/models/*
+!deeprtc/models/__init__.py
 media/
 var/
+celery.log
