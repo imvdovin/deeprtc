@@ -6,7 +6,7 @@ from uuid import uuid4
 from io import BytesIO
 from pathlib import Path
 from fastapi import UploadFile
-from deeprtc.common.settings import get_settings
+from deeprtc.common.settings import get_settings, media_folder, allowed_audio_codecs
 from deeprtc.modules.file.exceptions.http_unsupported_extension import UnsupportedExtensionHttpException
 from deeprtc.modules.file.repository import FileRepository
 from deeprtc.modules.file.dto.create_audio_text_token_dto import CreateAudioTextTokenDto
@@ -14,12 +14,10 @@ from deeprtc.modules.file.types import SaveFileResult
 
 
 def media_path_defined():
-    settings = get_settings()
-
     def inner_function(func):
         @functools.wraps(func)
         async def wrapped(*args):
-            media_path = Path(settings.save_folder)
+            media_path = Path(media_folder)
 
             if not media_path.is_dir():
                 media_path.mkdir()
@@ -38,13 +36,15 @@ class FileService:
     async def save(self, file: UploadFile) -> SaveFileResult:
         *file_name, file_ext = file.filename.split('.')
 
-        if file_ext == '' or file_ext is None:
+        if file_ext == '' or file_ext is None or \
+                file_ext not in allowed_audio_codecs:
             raise UnsupportedExtensionHttpException()
 
         generated_name = '{0}.{1}'.format(uuid4().hex, file_ext)
-        dest = Path(self.settings.save_folder) / generated_name
+        dest = media_folder / generated_name
 
-        audio_obj = pydub.AudioSegment.from_wav(file.file)
+        audio_obj = pydub.AudioSegment.from_wav(
+            file.file) if file_ext == 'wav' else pydub.AudioSegment.from_mp3(file.file)
 
         transformed_audio = audio_obj.set_channels(
             1).set_frame_rate(16000).set_sample_width(2)
