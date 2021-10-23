@@ -1,5 +1,15 @@
 version: "3"
 services:
+  backend:
+    build: .
+    command: uvicorn deeprtc.main:app --host 0.0.0.0 --port 80
+    volumes:
+      - ./:/app
+    network_mode: host
+    depends_on:
+      - worker
+      - mongodb
+
   mongodb:
     image: mongo:5.0
     restart: always
