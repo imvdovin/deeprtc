@@ -6,7 +6,7 @@ DeepRTC is a service that provides ASR (Automatic Speech Recognition) functional
 
 ```bash
 # copy .env file
-cp .env.example
+cp .env.example .env
 
 # set .env variables
 # download word2vec model in models folder
