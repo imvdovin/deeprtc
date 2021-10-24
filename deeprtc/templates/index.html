@@ -57,7 +57,7 @@
         <div class="col-md-auto">
           <div class="drag-image">
               <div class="icon"><i class="fas fa-cloud-upload-alt"></i></div>
-              <h6>Перетащи файл сюда</h6> <span>или</span> <button>Открой файл</button> <input id="audio_file" hidden type="file" accept="audio/*" />
+              <h6>Перенесите файл сюда</h6> <span>или</span> <button>Откройте файл</button> <input id="audio_file" hidden type="file" accept="audio/*" />
           </div>
           <!-- <audio control id="audio_player" /> -->
           <br/>
@@ -178,6 +178,32 @@
                 clearInterval(timer);
               })
             }, 7000);
+          })
+          .catch(err => {
+            if (!err.response) {
+              Swal.fire({
+                icon: 'error',
+                text: 'Запрос транскрибации завершился с ошибкой, попробуйте еще раз.',
+              });
+
+              return;
+            }
+
+            var status = err.response.status;
+
+            if (status === 415) {
+              Swal.fire({
+                icon: 'error',
+                text: 'Пожалуйста, загрузите аудиофайл в формате wav / mp3.',
+              });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                text: 'Запрос транскрибации завершился с ошибкой, попробуйте еще раз.',
+              });
+            }
+
+            console.log(err.response);
           });
 
           console.log(response);
@@ -185,6 +211,10 @@
 
       function downloadMsWord() {
         if (!audioTokenId) {
+          Swal.fire({
+            icon: 'error',
+            text: 'Нельзя скачать файл без пройденной транскрибации!',
+          });
           return;
         }
 
@@ -199,6 +229,10 @@
 
       function updateText() {
         if (!audioTokenId) {
+          Swal.fire({
+            icon: 'error',
+            text: 'Нельзя сохранить текст без пройденной транскрибации!',
+          });
           return;
         }
 
@@ -216,6 +250,13 @@
           if (!data) {
             return;
           }
+
+          Swal.fire({
+            icon: 'success',
+            text: 'Текст успешно сохранен!',
+            showConfirmButton: false,
+            timer: 1500
+          });
 
           console.log(data);
         })
@@ -298,6 +339,7 @@
     <script src="{{ url_for('static', path='js/bootstrap.bundle.min.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="{{ url_for('static', path='js/sweetalert2.all.min.js') }}"></script>
       
   </body>
 </html>

@@ -2,6 +2,7 @@ version: "3"
 services:
   backend:
     build: .
+    restart: always
     command: uvicorn deeprtc.main:app --host 0.0.0.0 --port 80
     volumes:
       - ./:/app
@@ -26,6 +27,7 @@ services:
   worker:
     build: .
     command: celery -A deeprtc.main:celery_app worker -P solo --loglevel=info --logfile=celery.log
+    restart: always
     volumes:
       - ./:/app
     environment:
@@ -39,6 +41,7 @@ services:
   dashboard:
     build: .
     command: celery -A deeprtc.main:celery_app flower --port=5566
+    restart: always
     environment:
       CELERY_BROKER_URL: "redis://localhost:6379/0"
       CELERY_RESULT_BACKEND: "redis://localhost:6379/0"
@@ -49,6 +52,7 @@ services:
 
   spellchecker:
     image: deeppavlov/base-cpu
+    restart: always
     volumes:
       - ./var/dp_components:/root/.deeppavlov:delegated
       - ./var/dp_envs:/venv:delegated
@@ -59,5 +63,6 @@ services:
 
   redis:
     image: redis:6-alpine
+    restart: always
     ports:
       - 6379:6379
