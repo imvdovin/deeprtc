@@ -31,6 +31,7 @@ class ASR:
         self.processor = processor
         self.SAMPLE_RATE = 16000
         self.MIN_PART_LENGTH = int(0.1 * self.SAMPLE_RATE)
+        self.pad_list = list(range(0,320,320//2))
 
     @staticmethod
     def _to_tensor(x: Union[np.ndarray, torch.Tensor]):
@@ -116,7 +117,8 @@ class ASR:
                 start = finish
 
     def predict_model(self, source: torch.Tensor) -> torch.Tensor:
-        inputs = self.processor(source,
+        batch = [torch.hstack((torch.zeros(pad), source)).numpy() for pad in self.pad_list]
+        inputs = self.processor(batch,
                                 sampling_rate=self.SAMPLE_RATE,
                                 return_tensors="pt",
                                 padding=True)
@@ -162,8 +164,14 @@ class ASR:
         Convert model predict to words.
         """
         pred_ids = torch.argmax(prediction, dim=-1)
+         # выбираем лучшего кандидата по длине
+        predict = self.processor.tokenizer.batch_decode(pred_ids)
+        len_list = list(map(len, predict))
+        max_value = max(len_list)
+        max_index = len_list.index(max_value)
+        # отправляем в декодирование лучшее распознование
         tokens = self.processor.tokenizer.convert_ids_to_tokens(
-            pred_ids.squeeze())
+            pred_ids[max_index].squeeze())
         part_words = self.find_words(tokens, part_length)
 
         return part_words
