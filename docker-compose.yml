@@ -27,6 +27,11 @@ services:
   worker:
     build: .
     command: celery -A deeprtc.main:celery_app worker -P solo --loglevel=info --logfile=celery.log
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
     restart: always
     volumes:
       - ./:/app

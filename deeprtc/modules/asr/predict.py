@@ -27,7 +27,7 @@ class ASR:
         self.device = gpu_usage if torch.cuda.is_available() else 'cpu'
         # self.model = Wav2Vec2ForCTC.from_pretrained(path_to_model).to(device)
         # self.processor = Wav2Vec2Processor.from_pretrained(path_to_model)
-        self.model = model
+        self.model = model.to(self.device)
         self.processor = processor
         self.SAMPLE_RATE = 16000
         self.MIN_PART_LENGTH = int(0.1 * self.SAMPLE_RATE)
