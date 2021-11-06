@@ -3,7 +3,7 @@ services:
   backend:
     build: .
     restart: always
-    command: uvicorn deeprtc.main:app --host 0.0.0.0 --port 80
+    command: uvicorn deeprtc.main:app --host 0.0.0.0 --port 8000
     volumes:
       - ./:/app
     network_mode: host

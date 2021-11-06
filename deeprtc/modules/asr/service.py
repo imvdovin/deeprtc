@@ -44,7 +44,8 @@ class ASRService:
         except Exception as err:
             logger.error(err)
 
-        update_dto = UpdateAudioTextTokenDto(text=text, transcribed=True)
+        update_dto = UpdateAudioTextTokenDto(
+            text=text, time_steps=predict['time_steps'], transcribed=True)
 
         loop = asyncio.get_event_loop()
 
