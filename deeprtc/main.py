@@ -4,12 +4,12 @@ import os
 from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from aiortc import RTCSessionDescription, RTCPeerConnection
 from aiortc.contrib.media import MediaBlackhole, MediaRelay
-from deeprtc.common.settings import get_settings
+from deeprtc.common.settings import get_settings, media_folder
 from deeprtc.common.exceptions.failed_on_start import FailedOnStartException
 from deeprtc.modules.webrtc.audio_track import AudioTrackStream
 from deeprtc.modules.webrtc.types import EMediaStreamAction
@@ -66,6 +66,16 @@ async def on_start():
 @ app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
     return templates.TemplateResponse("index.html", {'request': request})
+
+
+@app.get('/media/{name}')
+async def get_media(request: Request, name: str):
+    file_path = media_folder / name
+
+    if not file_path.is_file():
+        return Response(status_code=404)
+
+    return FileResponse(file_path)
 
 
 @ app.post("/offer")

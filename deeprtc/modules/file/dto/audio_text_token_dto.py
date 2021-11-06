@@ -1,3 +1,4 @@
+from typing import List, Optional, Dict
 from pydantic import BaseModel
 from bson.objectid import ObjectId
 
@@ -23,4 +24,5 @@ class AudioTextTokenDto(BaseModel):
     _id: PyObjectId
     file_name: str
     text: str
+    time_steps: Optional[List[Dict]]
     transcribed: bool
